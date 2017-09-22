@@ -13,7 +13,7 @@ documentation = "https://github.com/lemonrock/woff2-sys/blob/master/README.md"
 homepage = "https://github.com/lemonrock/woff2-sys"
 repository = "https://github.com/lemonrock/woff2-sys.git"
 exclude = ["*"]
-include = ["README.md", "LICENSE", "COPYRIGHT", "src/**/*.rs", "benches/**/*.rs", "examples/**/*.rs", "tests/**/*.rs", "Cargo.toml", "rustfmt.toml", "clippy.toml", "lib/**/*", "src/**/*.h", "tools/**/*", "bindgen-wrapper.conf.d/**/*", "compile-*.conf.d/**/*"]
+include = ["/README.md", "/LICENSE", "/COPYRIGHT", "/Cargo.toml", "/rustfmt.toml", "/clippy.toml", "/src/*.rs", "lib/woff2/LICENSE", "lib/woff2/README.md", "lib/woff2/CONTIBUTING.md", "/lib/woff2/src/**"]
 build = "src/build.rs"
 # Relative to Cargo.toml
 readme = "README.md"
