@@ -7,9 +7,7 @@
 #![allow(non_snake_case)]
 
 
-extern crate core;
 #[macro_use] extern crate cpp;
-extern crate libc;
 
 
 use ::std::mem::uninitialized;
@@ -17,12 +15,18 @@ use ::std::mem::uninitialized;
 
 cpp!
 {{
-	#include "woff_enc.h"
+	#include "woff2_enc.h"
 
 	using std::string;
 	using woff2::MaxWOFF2CompressedSize;
 	using woff2::ConvertTTFToWOFF2;
+	using woff2::WOFF2Params;
 }}
+
+#[link(name = "brotli")]
+extern "C"
+{
+}
 
 /// brotliQuality should normally be 11, allowTransforms should normally be true
 pub fn convertTtfToWoff2(ttfFontBytes: &[u8], additionalExtendedMetadataBytes: &[u8], brotliQuality: u8, allowTransforms: bool) -> Result<Vec<u8>, ()>
@@ -61,15 +65,18 @@ fn MaxWOFF2CompressedSize(length: usize, extended_metadata_length: usize) -> usi
 
 fn ConvertTTFToWOFF2(data: *const u8, length: usize, result: *mut u8, result_length: *mut usize, extended_metadata: *const u8, extended_metadata_length: usize, brotli_quality: i32, allow_transforms: bool) -> bool
 {
-	cpp!([data as "const uint8_t *", length as "size_t", result as "const uint8_t *", result_length as "size_t", extended_metadata as "const char *", extended_metadata_length as "size_t", brotli_quality as "int", allow_transforms as "bool"] -> bool as "bool"
+	unsafe
 	{
-		string copyOfExtendedMetadata(extended_metadata, extended_metadata_length);
+		cpp!([data as "const uint8_t *", length as "size_t", result as "uint8_t *", result_length as "size_t *", extended_metadata as "const char *", extended_metadata_length as "size_t", brotli_quality as "int", allow_transforms as "bool"] -> bool as "bool"
+		{
+			string copyOfExtendedMetadata(extended_metadata, extended_metadata_length);
 		
-		struct WOFF2Params params;
-		params.extended_metadata = copyOfExtendedMetadata;
-		params.brotli_quality = brotli_quality;
-		params.allow_transforms = allow_transforms;
+			struct WOFF2Params params;
+			params.extended_metadata = copyOfExtendedMetadata;
+			params.brotli_quality = brotli_quality;
+			params.allow_transforms = allow_transforms;
 		
-		return ConvertTTFToWOFF2(data, length, result, result_length, &params);
-	})
+			return ConvertTTFToWOFF2(data, length, result, result_length, params);
+		})
+	}
 }

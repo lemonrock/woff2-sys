@@ -2,45 +2,47 @@
 // Copyright © 2017 The developers of woff2-sys. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/woff2-sys/master/COPYRIGHT.
 
 
+#![allow(non_snake_case)]
+
+
 extern crate cpp_build;
 extern crate cc;
 
 
-use ::bindgen::Builder;
-use ::gcc::Build;
+use ::cc::Build;
+use ::cpp_build::Config;
 use ::std::env::var;
 
 
 fn main()
 {
 	compileCPlusPlusGlueCode();
-	
-	
+	compileWoff2Library();
 }
 
 fn compileCPlusPlusGlueCode()
 {
-	cpp_build::build("src/lib.rs");
+	Config::new().include("lib/woff2/src").build("src/lib.rs");
 }
 
 fn compileWoff2Library()
 {
+	let brotliIncludeFolderPath = var("DEP_BROTLI_INCLUDE").unwrap();
+	
 	// eg x86_64-apple-darwin15
 	let target = var("TARGET").unwrap();
 	let compilingForMacOsX = target.rfind("-darwin").is_some();
 	
 	let mut cc = Build::new();
-	
 	cc
-		.cpp(true)
-		.shared_flag(false)
-		.static_flag(true)
-		.warnings(false)
-		.flag("-fno-omit-frame-pointer")
-		.flag("-no-canonical-prefixes")
-		.flag("-std=c++11")
-		.define(" __STDC_FORMAT_MACROS", None);
-	
+	.cpp(true)
+	.shared_flag(false)
+	.static_flag(true)
+	.warnings(false)
+	.flag("-fno-omit-frame-pointer")
+	.flag("-no-canonical-prefixes")
+	.flag("-std=c++11")
+	.define(" __STDC_FORMAT_MACROS", None);
 	if compilingForMacOsX
 	{
 		cc.define("OS_MACOSX", None);
@@ -49,27 +51,17 @@ fn compileWoff2Library()
 	{
 		cc.flag("-fno-tree-vrp");
 	}
-	
-	.file("lib/woff2/font.c")
-	.file("lib/woff2/glyph.c")
-	.file("lib/woff2/normalize.c")
-	.file("lib/woff2/table_tags.c")
-	.file("lib/woff2/transform.c")
-	.file("lib/woff2/woff2_dec.c")
-	.file("lib/woff2/woff2_enc.c")
-	.file("lib/woff2/woff2_common.c")
-	.file("lib/woff2/woff2_out.c")
-	.file("lib/woff2/variable_length.c")
-	
-	// everything in brotli
-	
+	cc
+	.include(brotliIncludeFolderPath)
+	.file("lib/woff2/src/font.cc")
+	.file("lib/woff2/src/glyph.cc")
+	.file("lib/woff2/src/normalize.cc")
+	.file("lib/woff2/src/table_tags.cc")
+	.file("lib/woff2/src/transform.cc")
+	.file("lib/woff2/src/woff2_dec.cc")
+	.file("lib/woff2/src/woff2_enc.cc")
+	.file("lib/woff2/src/woff2_common.cc")
+	.file("lib/woff2/src/woff2_out.cc")
+	.file("lib/woff2/src/variable_length.cc")
     .compile("woff2");
 }
-
-/*
-BROTLI = brotli
-BROTLIOBJ = $(BROTLI)/bin/obj
-ENCOBJ = $(BROTLIOBJ)/enc/*.o
-DECOBJ = $(BROTLIOBJ)/dec/*.o
-COMMONOBJ = $(BROTLIOBJ)/common/*.o
-*/

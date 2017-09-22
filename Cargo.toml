@@ -4,7 +4,7 @@
 
 [package]
 name = "woff2-sys"
-description = "woff2-sys"
+description = "FFI bindings to Google's woff2 library"
 keywords = ["woff2", "woff", "ttf", "font"]
 categories = ["external-ffi-bindings", "web-programming", "compression", "encoding"]
 license = "MIT"
@@ -29,8 +29,8 @@ debug-assertions = false
 codegen-units = 1
 
 [dependencies]
+brotli-sys = "0.3"
 cpp = "0.3"
-libc = "0.2"
 
 [build-dependencies]
 cpp_build = "0.3"
